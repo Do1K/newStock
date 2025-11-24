@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -25,19 +26,20 @@ public class TradeQueue {
     }
 
     public void addSell(String stockCode, TradeItem tradeItem) {
-        if(!sellQueue.containsKey(stockCode)) {
-            sellQueue.put(stockCode, new PriorityBlockingQueue<>());
-            buyQueue.put(stockCode, new PriorityBlockingQueue<>());
+        Queue<TradeItem> queue = sellQueue.computeIfAbsent(stockCode, k -> new PriorityQueue<>());
+
+        synchronized (queue) {
+            queue.add(tradeItem);
         }
-        sellQueue.get(stockCode).add(tradeItem);
     }
 
     public void addBuy(String stockCode, TradeItem tradeItem) {
-        if(!buyQueue.containsKey(stockCode)) {
-            buyQueue.put(stockCode, new PriorityBlockingQueue<>());
-            sellQueue.put(stockCode, new PriorityBlockingQueue<>());
+
+        Queue<TradeItem> queue = buyQueue.computeIfAbsent(stockCode, k -> new PriorityQueue<>());
+
+        synchronized (queue) {
+            queue.add(tradeItem);
         }
-        buyQueue.get(stockCode).add(tradeItem);
     }
 
 
